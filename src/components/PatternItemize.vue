@@ -1,6 +1,6 @@
 <template>
   <div class="patterns-page">
-    <textarea v-model="patternText"></textarea>
+    <textarea ref="patterntext" v-model="patternText"></textarea>
     <hr />
     <table>
       <thead>
@@ -41,14 +41,14 @@ export default {
       const lines = this.patternText.split('\n')
       this.patterns = lines
         .map((line) => {
-          const regex = /^(\d+)n\s*\+?\s*(\d*)\s*(.*)\s*:\s*(.*)$/
+          const regex = /^((\d+)n)?\s*\+?\s*(\d*)\s*(.*)\s*:\s*(.*)$/
           const matches = line.match(regex)
           if (matches) {
             console.log(matches)
-            const interval = parseInt(matches[1])
-            const start = matches[2] ? parseInt(matches[2]) : 0
-            const name = matches[3]
-            const description = matches[4]
+            const interval = parseInt(matches[2])
+            const start = matches[3] ? parseInt(matches[3]) : 0
+            const name = matches[4]
+            const description = matches[5]
             return { start, interval, name, description }
           } else {
             // Handle invalid line format
@@ -71,6 +71,10 @@ export default {
           turn += pattern.interval
         }
       })
+    },
+    resizeTextarea() {
+      const textarea = this.$refs.patterntext
+      textarea.style.height = `${textarea.scrollHeight}px`
     }
   },
   watch: {
@@ -78,6 +82,7 @@ export default {
       handler() {
         this.createPatterns()
         this.applyPatterns()
+        this.resizeTextarea()
       }
     }
   }
