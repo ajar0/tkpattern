@@ -1,6 +1,12 @@
 <template>
   <div class="patterns-page">
-    <textarea ref="patterntext" v-model="patternText"></textarea>
+    <div
+      ref="patterntext"
+      class="editbox"
+      contenteditable
+      @input="updatePatternText"
+      @paste="trimPastedText"
+    ></div>
     <hr />
     <table>
       <thead>
@@ -8,6 +14,7 @@
           <th>Turn</th>
           <th>Name</th>
           <th>Description</th>
+          <th>Memo</th>
         </tr>
       </thead>
       <tbody>
@@ -18,6 +25,9 @@
           </td>
           <td>
             <div v-for="description in turn[2]" :key="description">{{ description }}</div>
+          </td>
+          <td>
+            <div contenteditable></div>
           </td>
         </tr>
       </tbody>
@@ -38,13 +48,13 @@ export default {
   },
   methods: {
     createPatterns() {
+      this.patternText = this.$refs.patterntext.innerText
       const lines = this.patternText.split('\n')
       this.patterns = lines
         .map((line) => {
           const regex = /^((\d+)n)?\s*\+?\s*(\d*)\s*(.*)\s*:\s*(.*)$/
           const matches = line.match(regex)
           if (matches) {
-            console.log(matches)
             const interval = parseInt(matches[2])
             const start = matches[3] ? parseInt(matches[3]) : 0
             const name = matches[4]
@@ -72,18 +82,24 @@ export default {
         }
       })
     },
+    trimPastedText(event) {
+      const html = (event.clipboardData || window.clipboardData).getData('text/html')
+      const patternTextDiv = this.$refs.patterntext
+      patternTextDiv.innerHTML = html
+      const trimmedText = patternTextDiv.innerText.replace(/^\s*[\r\n]/gm, '')
+      patternTextDiv.innerText = trimmedText
+      event.preventDefault()
+      this.updatePatternText()
+    },
     resizeTextarea() {
+      const lines = this.patternText.split('\n').length
       const textarea = this.$refs.patterntext
-      textarea.style.height = `${textarea.scrollHeight}px`
-    }
-  },
-  watch: {
-    patternText: {
-      handler() {
-        this.createPatterns()
-        this.applyPatterns()
-        this.resizeTextarea()
-      }
+      textarea.style.height = `${lines}rm`
+    },
+    updatePatternText() {
+      this.createPatterns()
+      this.applyPatterns()
+      this.resizeTextarea()
     }
   }
 }
@@ -99,13 +115,15 @@ export default {
   width: 100%;
 }
 
+.patterns-page .editbox {
+  width: 100%;
+  background-color: var(--color-background-soft);
+}
+
 .patterns-page table,
 tr,
 td,
 th {
   border: 1px solid var(--color-border);
-}
-.patterns-page textarea {
-  width: 100%;
 }
 </style>
