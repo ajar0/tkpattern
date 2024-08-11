@@ -1,3 +1,7 @@
+<script setup>
+import ActionCards from './ActionCards.vue'
+</script>
+
 <template>
   <div class="patterns-page">
     <div
@@ -14,20 +18,24 @@
           <th>Turn</th>
           <th>Name</th>
           <th>Description</th>
+          <th>Action</th>
           <th>Memo</th>
         </tr>
       </thead>
       <tbody>
-        <tr v-for="turn in turns" :key="turn[0]">
-          <td>{{ turn[0] }}</td>
+        <tr v-for="turn in turns" :key="turn.index">
+          <td>{{ turn.index }}</td>
           <td>
-            <div v-for="name in turn[1]" :key="name">{{ name }}</div>
+            <div v-for="name in turn.names" :key="name">{{ name }}</div>
           </td>
           <td>
-            <div v-for="description in turn[2]" :key="description">{{ description }}</div>
+            <div v-for="description in turn.descriptions" :key="description">{{ description }}</div>
           </td>
           <td>
-            <div contenteditable></div>
+            <ActionCards v-model="actionCards[turn.index - 1]" />
+          </td>
+          <td>
+            <input class="memo" v-model="memos[turn.index - 1]" />
           </td>
         </tr>
       </tbody>
@@ -43,10 +51,27 @@ export default {
     return {
       patternText: '',
       patterns: [],
-      turns: Array.from({ length: maxTurn }, (_, index) => [index + 1, [], []])
+      turns: this.emptyTurns(),
+      actionCards: this.emptyActions(),
+      memos: this.emptyMemo()
     }
   },
   methods: {
+    emptyTurns() {
+      return Array.from({ length: maxTurn }, (_, index) => ({
+        index: index + 1,
+        names: [],
+        descriptions: []
+      }))
+    },
+    emptyActions() {
+      return Array.from({ length: maxTurn }, () =>
+        Array.from({ length: 5 }, (_, index) => ({ position: index + 1, seq: 0, do: '' }))
+      )
+    },
+    emptyMemo() {
+      return Array.from({ length: maxTurn }, () => '')
+    },
     createPatterns() {
       this.patternText = this.$refs.patterntext.innerText
       const lines = this.patternText.split('\n')
@@ -68,16 +93,13 @@ export default {
         .filter((pattern) => pattern !== null)
     },
     applyPatterns() {
-      this.turns.forEach((turn) => {
-        turn[1] = []
-        turn[2] = []
-      })
+      this.turns = this.emptyTurns()
 
       this.patterns.forEach((pattern) => {
         let turn = pattern.start ? pattern.start : pattern.interval
         while (turn <= maxTurn) {
-          this.turns[turn - 1][1].push(pattern.name)
-          this.turns[turn - 1][2].push(pattern.description)
+          this.turns[turn - 1].names.push(pattern.name)
+          this.turns[turn - 1].descriptions.push(pattern.description)
           turn += pattern.interval
         }
       })
@@ -125,5 +147,8 @@ tr,
 td,
 th {
   border: 1px solid var(--color-border);
+}
+.patterns-page .memo {
+  width: 100%;
 }
 </style>
