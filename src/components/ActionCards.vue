@@ -10,7 +10,7 @@ const actions = defineModel({ required: true })
       class="action-card"
       @click="cycleActions(action)"
     >
-      <div class="action-item" :style="actionMap[action.do].style">
+      <div :class="'icon-action-' + action.do" :style="'align-self: ' + actionMap[action.do].align">
         {{ actionMap[action.do].sign }}
       </div>
     </div>
@@ -19,10 +19,10 @@ const actions = defineModel({ required: true })
 
 <script>
 const actionMap = {
-  a: { sign: '⇧', style: 'align-self: center' },
-  u: { sign: '⇮', style: 'align-self: flex-start' },
-  d: { sign: '⇩', style: 'align-self: flex-end' },
-  '': { sign: ' ' }
+  a: { align: 'center' },
+  u: { align: 'flex-start' },
+  d: { align: 'flex-end' },
+  x: { align: 'center' }
 }
 
 export default {
@@ -38,15 +38,15 @@ export default {
 </script>
 
 <style scoped>
-.action-cards,
+.action-cards {
+  display: flex;
+  align-items: center;
+}
 .action-card {
   display: flex;
   justify-content: center;
-}
-.action-card {
   width: 2rem;
   height: 3rem;
-  text-align: center;
   border: 2px var(--color-border) solid;
   cursor: pointer;
 }

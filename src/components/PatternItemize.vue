@@ -18,8 +18,11 @@ import ActionCards from './ActionCards.vue'
           <th>Turn</th>
           <th>Name</th>
           <th>Description</th>
-          <th>Action</th>
-          <th>Memo</th>
+          <th class="actions">
+            Action
+            <button class="icon-delete" @click="actionCards = emptyActions()"></button>
+          </th>
+          <th>Memo <button class="icon-delete" @click="memos = emptyMemo()"></button></th>
         </tr>
       </thead>
       <tbody>
@@ -31,8 +34,14 @@ import ActionCards from './ActionCards.vue'
           <td>
             <div v-for="description in turn.descriptions" :key="description">{{ description }}</div>
           </td>
-          <td>
-            <ActionCards v-model="actionCards[turn.index - 1]" />
+          <td class="flex">
+            <div>
+              <ActionCards v-model="actionCards[turn.index - 1]" />
+            </div>
+            <div>
+              <button class="icon-copy" @click="copyActions(turn)"></button>
+              <button class="icon-paste" @click="pasteActions(turn)"></button>
+            </div>
           </td>
           <td>
             <input class="memo" v-model="memos[turn.index - 1]" />
@@ -53,7 +62,8 @@ export default {
       patterns: [],
       turns: this.emptyTurns(),
       actionCards: this.emptyActions(),
-      memos: this.emptyMemo()
+      memos: this.emptyMemo(),
+      clipboard: null
     }
   },
   methods: {
@@ -66,11 +76,18 @@ export default {
     },
     emptyActions() {
       return Array.from({ length: maxTurn }, () =>
-        Array.from({ length: 5 }, (_, index) => ({ position: index + 1, seq: 0, do: '' }))
+        Array.from({ length: 5 }, (_, index) => ({ position: index + 1, seq: 0, do: 'x' }))
       )
     },
     emptyMemo() {
       return Array.from({ length: maxTurn }, () => '')
+    },
+    copyActions(turn) {
+      this.clipboard = this.actionCards[turn.index - 1]
+    },
+    pasteActions(turn) {
+      if (!this.clipboard) return
+      this.actionCards[turn.index - 1] = JSON.parse(JSON.stringify(this.clipboard))
     },
     createPatterns() {
       this.patternText = this.$refs.patterntext.innerText
@@ -150,5 +167,14 @@ th {
 }
 .patterns-page .memo {
   width: 100%;
+}
+
+.patterns-page .flex {
+  display: flex;
+  align-items: center;
+}
+
+.patterns-page .actions {
+  width: 14rem;
 }
 </style>
