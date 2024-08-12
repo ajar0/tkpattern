@@ -26,7 +26,12 @@ import ActionCards from './ActionCards.vue'
         </tr>
       </thead>
       <tbody>
-        <tr v-for="turn in turns" :key="turn.index">
+        <tr
+          v-for="turn in turns"
+          :key="turn.index"
+          :class="{ active: turn.index === activeTurn }"
+          @click="activateTurn(turn)"
+        >
           <td>{{ turn.index }}</td>
           <td>
             <div v-for="name in turn.names" :key="name">{{ name }}</div>
@@ -36,11 +41,18 @@ import ActionCards from './ActionCards.vue'
           </td>
           <td class="flex">
             <div>
-              <ActionCards v-model="actionCards[turn.index - 1]" />
+              <ActionCards
+                :actions="actionCards[turn.index - 1]"
+                :isActive="turn.index === activeTurn"
+              />
             </div>
             <div>
               <button class="icon-copy" @click="copyActions(turn)"></button>
-              <button class="icon-paste" @click="pasteActions(turn)"></button>
+              <button
+                class="icon-paste"
+                @click="pasteActions(turn)"
+                :disabled="!clipboard"
+              ></button>
             </div>
           </td>
           <td>
@@ -63,7 +75,8 @@ export default {
       turns: this.emptyTurns(),
       actionCards: this.emptyActions(),
       memos: this.emptyMemo(),
-      clipboard: null
+      clipboard: null,
+      activeTurn: -1
     }
   },
   methods: {
@@ -76,7 +89,7 @@ export default {
     },
     emptyActions() {
       return Array.from({ length: maxTurn }, () =>
-        Array.from({ length: 5 }, (_, index) => ({ position: index + 1, seq: 0, do: 'x' }))
+        Array.from({ length: 5 }, (_, i) => ({ position: i, seq: i, do: 'a' }))
       )
     },
     emptyMemo() {
@@ -88,6 +101,9 @@ export default {
     pasteActions(turn) {
       if (!this.clipboard) return
       this.actionCards[turn.index - 1] = JSON.parse(JSON.stringify(this.clipboard))
+    },
+    activateTurn(turn) {
+      this.activeTurn = turn.index
     },
     createPatterns() {
       this.patternText = this.$refs.patterntext.innerText
@@ -164,6 +180,9 @@ tr,
 td,
 th {
   border: 1px solid var(--color-border);
+}
+.patterns-page table tr.active {
+  background-color: var(--color-background-soft);
 }
 .patterns-page .memo {
   width: 100%;
