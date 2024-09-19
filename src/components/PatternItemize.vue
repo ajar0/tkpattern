@@ -138,11 +138,15 @@ export default {
       })
     },
     trimPastedText(event) {
-      const html = (event.clipboardData || window.clipboardData).getData('text/html')
+      const clipboardData = event.clipboardData || window.clipboardData
+      const html = clipboardData.getData('text/html')
       const patternTextDiv = this.$refs.patterntext
-      patternTextDiv.innerHTML = html
-      const trimmedText = patternTextDiv.innerText.replace(/^\s*[\r\n]/gm, '')
-      patternTextDiv.innerText = trimmedText
+      if (html) {
+        patternTextDiv.innerHTML = html
+        patternTextDiv.innerText = patternTextDiv.innerText.replace(/^\s*[\r\n]/gm, '')
+      } else {
+        patternTextDiv.innerText = clipboardData.getData('text/plain')
+      }
       event.preventDefault()
       this.updatePatternText()
     },
